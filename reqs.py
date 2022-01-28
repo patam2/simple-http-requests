@@ -12,6 +12,16 @@ ssl_context = ssl.create_default_context()
 ####TODO:
 #* Connection lost -> refreshing
 
+class Response:
+    def __init__(self, body, headers) -> None:
+        self.headers = headers
+        self.body = body
+    @property
+    def cookies(self):
+        if 'set-cookie' in self.headers:
+            return self.headers['set-cookie']
+        else:
+            return None
 
 class Session():
     def __init__(self, url:str) -> None:
@@ -37,31 +47,33 @@ class Session():
 
         data, received = self.socket_session \
             .recv(block_size) \
-            .split(b"\r\n\r\n")
+            .split(b"\r\n\r\n", 1)
 
-        parsed = formatting.parse_request_data(data)
-
+        headers = dict(
+            sorted(
+                formatting.parse_request_data(data) \
+                .items()
+            )
+        ) #todo better foramting etc
         #301 checking
-        if b'301 Moved Permanently' in data:
-            self.socket_session.shutdown(2)
+        if b'301 Moved Permanently' in data or b"308 Permanent Redirect" in data:
+            #self.socket_session.shutdown(2)
+            redirect = headers['location']
 
-            redirect, page = re.search(
-                'Location: http*://(.*)\\r\\n', data.decode()
-            ) \
-                .group(1) \
-                .split('/', 1)
-
-            page = '/' + page
-            return self.get(redirect, page)
+            parsed = formatting.parse_url(redirect)
+            self.host = parsed[0]
+            return self.get(parsed[1])
         
-        if int(parsed['content-length']) > len(received):
-            while len(received) < parsed['content-length']:
-                received += bytes(self.socket_session.recv(1))
+        if int(headers['content-length']) > len(received):
+            cnt_length = int(headers['content-length'])
+            while len(received) < cnt_length:
+                received += bytes(self.socket_session.recv(cnt_length))
 
         elif b'content-length' not in data.lower():
             while True:
                 received += bytes(self.socket_session.recv(block_size))
                 if received.endswith(b'\r\n\r\n'):
                     break
-
-        return received.decode()
+        
+        
+        return Response(received.decode(), headers)
