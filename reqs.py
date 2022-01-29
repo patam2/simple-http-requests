@@ -65,9 +65,9 @@ class Session():
             return self.get(parsed[1])
         
         if int(headers['content-length']) > len(received):
-            cnt_length = int(headers['content-length'])
-            while len(received) < cnt_length:
-                received += bytes(self.socket_session.recv(cnt_length))
+            content_length = int(headers['content-length'])
+            while len(received) < content_length:
+                received += bytes(self.socket_session.recv(content_length))
 
         elif b'content-length' not in data.lower():
             while True:
