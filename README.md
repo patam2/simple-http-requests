@@ -9,8 +9,8 @@ Simple HTTP/S requests with python
 >>> sess.post('/post', json={'Hello': 'There'}).status_code
 200
 ```
-
-## Little annoyance eliminated that bothered me with requests
+## SOme (small) features:
+### Little annoyance eliminated that bothered me with requests
 ```python
 >>> sess = reqs.Session('httpbin.org')
 >>> req = sess.get('/get')
