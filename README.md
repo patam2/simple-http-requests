@@ -10,6 +10,18 @@ Simple HTTP/S requests with python
 200
 ```
 
+## Little annoyance eliminated
+```python
+>>> sess = reqs.Session('httpbin.org')
+>>> req = sess.get('/get')
+>>> print(req)
+{
+  "args": {},
+  "headers": {
+    "Host": "httpbin.org",
+...
+}
+```
 ## Time comparision
 ### This module
 ```python
