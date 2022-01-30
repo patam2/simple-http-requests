@@ -10,7 +10,7 @@ Simple HTTP/S requests with python
 200
 ```
 
-## Little annoyance eliminated
+## Little annoyance eliminated that bothered me with requests
 ```python
 >>> sess = reqs.Session('httpbin.org')
 >>> req = sess.get('/get')
