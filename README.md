@@ -9,7 +9,11 @@ Simple HTTP/S requests with python
 >>> sess.post('/post', json={'Hello': 'There'}).status_code
 200
 ```
-## SOme (small) features:
+## Some (small) features:
+
+### Different TLS fingerprint
+* Can get past CF sometimes
+
 ### Little annoyance eliminated that bothered me with requests
 ```python
 >>> sess = reqs.Session('httpbin.org')
