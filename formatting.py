@@ -28,14 +28,16 @@ def parse_url(url: str):
 
 def parse_request_data(data: bytes) -> dict:
     out = {}
+    
     data = data.decode().split('\r\n')
+    status_code = re.search('HTTP/1.1 (\d+)', data[0]).group(1)
+
     for i in data:
         if ':' not in i:
             continue
-        
         key, value = i.split(':', 1)
         out[key.lower()] = value
-    return out
+    return out, status_code
 
 def parse_headers_to_req_data(header:dict) -> str:
     pass
