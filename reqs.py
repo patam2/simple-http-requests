@@ -1,7 +1,8 @@
 import ssl
 import socket
 import formatting
-import json as jsonmodule
+import json
+import warnings
 
 BLOCKSIZE = 1024**2
 
@@ -15,6 +16,9 @@ class Response:
         self.body = body
         self.status_code = int(status_code)
 
+    def __str__(self) -> str:
+        return self.body
+
     @property
     def cookies(self):
         if "set-cookie" in self.headers:
@@ -24,7 +28,7 @@ class Response:
 
     @property
     def json(self):
-        return jsonmodule.loads(self.body)
+        return json.loads(self.body)
 
 
 class Session:
@@ -40,23 +44,24 @@ class Session:
                 ssl_version=ssl.PROTOCOL_TLSv1_2,
             )
 
-    def request(self, method, page, headers={}, json=None):
+    def request(self, method, page, headers={}, data=None, **kwargs):
         method, body = method.upper(), ""
         message = f"{method} {page} HTTP/1.1\r\nHost: {self.host}\r\n"
 
-        if method == "POST":
-            headers["content-length"] = len(str(json))
-            headers["content-type"] = "application/json"
-            body = str(json)
+        if method == "POST" and data:
+            if headers == {}:
+                warnings.warn('No content-type header sent!', Warning)
+            headers["content-length"] = len(str(data))
 
         if isinstance(headers, dict) and len(headers) != 0:
             for i, k in headers.items():
                 message += f"{i}: {k}\r\n"
     
-        if body != '':
-            message += "\r\n" + body + "\r\n\r\n"
+        if data:
+            message += f"\r\n{data}\r\n\r\n"
         else:
             message += '\r\n'
+        print(message)
         self.socket_session.send(message.encode())
 
         data, received = self.socket_session.recv(BLOCKSIZE).split(b"\r\n\r\n", 1)
@@ -82,5 +87,5 @@ class Session:
     def get(self, page, headers={}):
         return self.request("get", page, headers)
 
-    def post(self, page, headers={}, json=None):
-        return self.request("post", page, headers, json)
+    def post(self, page, headers={}, data=None):
+        return self.request("post", page, headers, data)
