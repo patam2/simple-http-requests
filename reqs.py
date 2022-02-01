@@ -44,7 +44,17 @@ class Session:
                 ssl_version=ssl.PROTOCOL_TLSv1_2,
             )
 
-    def request(self, method, page, headers={}, data=None, **kwargs):
+    def request(self, method: str, page: str, headers={}, data=None) -> Response:
+        """
+        Returns the Response element
+
+        request(
+            method = "GET" | "POST";\n
+            page = str;\n
+            headers = dict;\n
+            data = any\n
+        )
+        """
         method, body = method.upper(), ""
         message = f"{method} {page} HTTP/1.1\r\nHost: {self.host}\r\n"
 
@@ -61,7 +71,7 @@ class Session:
             message += f"\r\n{data}\r\n\r\n"
         else:
             message += '\r\n'
-        print(message)
+
         self.socket_session.send(message.encode())
 
         data, received = self.socket_session.recv(BLOCKSIZE).split(b"\r\n\r\n", 1)
@@ -84,8 +94,8 @@ class Session:
                 received += bytes(self.socket_session.recv(content_length))
         return Response(received.decode(), headers, status_code)
 
-    def get(self, page, headers={}):
+    def get(self, page, headers={}) -> Response:
         return self.request("get", page, headers)
 
-    def post(self, page, headers={}, data=None):
+    def post(self, page, headers={}, data=None) -> Response:
         return self.request("post", page, headers, data)
