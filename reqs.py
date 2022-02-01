@@ -44,7 +44,7 @@ class Session:
                 ssl_version=ssl.PROTOCOL_TLSv1_2,
             )
 
-    def request(self, method: str, page: str, headers={}, data=None) -> Response:
+    def request(self, method: str, page: str, headers={}, data=None, **kwargs) -> Response:
         """
         Returns the Response element
 
@@ -58,6 +58,7 @@ class Session:
         method, body = method.upper(), ""
         message = f"{method} {page} HTTP/1.1\r\nHost: {self.host}\r\n"
 
+        # HEADERS
         if method == "POST" and data:
             if headers == {}:
                 warnings.warn('No content-type header sent!', Warning)
@@ -66,12 +67,19 @@ class Session:
         if isinstance(headers, dict) and len(headers) != 0:
             for i, k in headers.items():
                 message += f"{i}: {k}\r\n"
-    
+
+        if 'cookies' in kwargs:
+            cookie_string = ""
+            for cookie, value in kwargs['cookies'].items():
+                cookie_string += f"{cookie}={value}; "
+            message += f"cookie: {cookie_string[:-2]}\r\n"
+
         if data:
             message += f"\r\n{data}\r\n\r\n"
         else:
             message += '\r\n'
 
+        print(message)
         self.socket_session.send(message.encode())
 
         data, received = self.socket_session.recv(BLOCKSIZE).split(b"\r\n\r\n", 1)
@@ -94,8 +102,8 @@ class Session:
                 received += bytes(self.socket_session.recv(content_length))
         return Response(received.decode(), headers, status_code)
 
-    def get(self, page, headers={}) -> Response:
-        return self.request("get", page, headers)
+    def get(self, page, headers={}, **kwargs) -> Response:
+        return self.request("get", page, headers, **kwargs)
 
-    def post(self, page, headers={}, data=None) -> Response:
-        return self.request("post", page, headers, data)
+    def post(self, page, headers={}, data=None, **kwargs) -> Response:
+        return self.request("post", page, headers, data, **kwargs)
