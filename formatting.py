@@ -1,5 +1,6 @@
 import re
-
+from collections import defaultdict
+import string
 
 def get_page(url):
     url = url.split('/', 3)
@@ -27,7 +28,7 @@ def parse_url(url: str):
     return host, port
 
 def parse_request_data(data: bytes) -> dict:
-    out = {}
+    out = defaultdict(str)
     
     data = data.decode().split('\r\n')
     status_code = re.search('HTTP/1.1 (\d+)', data[0]).group(1)
@@ -36,7 +37,7 @@ def parse_request_data(data: bytes) -> dict:
         if ':' not in i:
             continue
         key, value = i.split(':', 1)
-        out[key.lower()] = value
+        out[key.lower()] += value
     return out, status_code
 
 def parse_headers_to_req_data(header:dict) -> str:
