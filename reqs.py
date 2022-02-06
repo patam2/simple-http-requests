@@ -40,7 +40,7 @@ class Session:
             self.socket_session = ssl.wrap_socket(
                 self.socket_session,
                 server_side=False,
-                do_handshake_on_connect=False,
+                do_handshake_on_connect=True,
                 ssl_version=ssl.PROTOCOL_TLSv1_2,
             )
 
@@ -79,7 +79,6 @@ class Session:
         else:
             message += '\r\n'
 
-        print(message)
         self.socket_session.send(message.encode())
 
         data, received = self.socket_session.recv(BLOCKSIZE).split(b"\r\n\r\n", 1)
