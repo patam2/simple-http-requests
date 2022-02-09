@@ -6,14 +6,13 @@ def get_page(url):
     url = url.split('/', 3)
     if len(url) == 1:
         return url[0]
-
     if len(url) != 4:
         page = ''
     elif len(url) != 1:
         page = '/' + url[3]
 
     host = url[2]
-    return host
+    return host, page
 
 def parse_url(url: str):
     page, port = None, 443
@@ -21,17 +20,15 @@ def parse_url(url: str):
         port = 80
     if url.startswith('https:'):
         port = 443
-  
-    host = get_page(url)
+    host, page = get_page(url)
     
 
-    return host, port
+    return host, page, port
 
 def parse_request_data(data: bytes) -> dict:
     out = defaultdict(str)
-    
     data = data.decode().split('\r\n')
-    status_code = re.search('HTTP/1.1 (\d+)', data[0]).group(1)
+    status_code = re.search('HTTP/1.\d (\d+)', data[0]).group(1)
 
     for i in data:
         if ':' not in i:
